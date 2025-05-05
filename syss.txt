@@ -1,0 +1,112 @@
+1. HDFS (Hadoop Distributed File System)
+ Purpose:
+HDFS is designed to store massive volumes of data (terabytes to petabytes) across multiple machines in a fault-tolerant, high-throughput manner.
+
+ Key Components of HDFS:
+ a. NameNode (Master Node)
+Manages the metadata (file names, permissions, block locations).
+
+Knows where the data blocks are stored, but doesn’t store the data itself.
+
+There's typically one active NameNode per cluster.
+
+ b. DataNode (Slave Node)
+Actually stores the data blocks on disk.
+
+Sends regular heartbeats and block reports to the NameNode.
+
+c. Secondary NameNode (not a backup!)
+Periodically merges the namespace image with edit logs to reduce NameNode startup time.
+Working of HDFS (Simplified Flow):
+File Split into Blocks:
+
+Default block size = 128 MB (configurable).
+
+A file of 300 MB will be split into 3 blocks: Block1 (128MB), Block2 (128MB), Block3 (44MB).
+
+Replication:
+
+Each block is replicated across multiple DataNodes (default: 3 copies).
+
+Provides fault tolerance—if one node fails, others still have the data.
+
+Write Flow:
+
+Client contacts NameNode → gets DataNode list → writes data to them.
+
+Read Flow:
+
+Client requests a file → NameNode returns block locations → client reads from DataNodes directly.
+
+ Advantages:
+Highly fault-tolerant.
+
+Scales linearly with cheap hardware.
+
+Write-once, read-many model – optimized for big data workloads.
+
+ 2. MapReduce Framework
+Purpose:
+MapReduce is a programming model and execution engine for processing large data sets with a distributed algorithm on a Hadoop cluster.
+
+ Core Concepts:
+a. Map Phase:
+Input: Data split into chunks and processed in parallel.
+
+The Mapper function takes (key, value) pairs and emits intermediate (key, value) pairs.
+
+Example:
+
+text
+Copy
+Edit
+Input Line: "Hello Hadoop Hadoop"
+Output: (Hello, 1), (Hadoop, 1), (Hadoop, 1)
+b. Shuffle and Sort:
+Hadoop groups all intermediate values by key and sorts them.
+
+This prepares the data for reduction.
+
+Example:
+
+text
+Copy
+Edit
+Intermediate: (Hadoop, [1, 1]), (Hello, [1])
+c. Reduce Phase:
+The Reducer receives keys and a list of values.
+
+Aggregates or summarizes the values to produce final output.
+
+Example:
+
+text
+Copy
+Edit
+Output: (Hadoop, 2), (Hello, 1)
+ MapReduce Job Flow:
+Input Split: HDFS divides files into splits (blocks).
+
+Map Task: Processes each split and produces intermediate results.
+
+Shuffle & Sort: Moves data between Mappers and Reducers.
+
+Reduce Task: Aggregates intermediate results to final output.
+
+Output: Written back to HDFS.
+
+ HDFS + MapReduce Together:
+HDFS stores the large dataset (distributed storage).
+
+MapReduce processes the data stored in HDFS (distributed processing).
+
+Data locality principle is used—processing tasks are scheduled where data resides, minimizing network transfer.
+
+ Example Workflow (WordCount):
+Input: A large text file in HDFS.
+
+Mapper: Tokenizes lines and emits (word, 1).
+
+Reducer: Aggregates counts per word.
+
+Output: Written back to HDFS as (word, total count).
